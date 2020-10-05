@@ -59,4 +59,9 @@ func TestGetItem(t *testing.T) {
 	for k, v := range item.Map {
 		fmt.Printf("  %v:%v\n", k, v)
 	}
+	// empty name
+	item, err = fsdb.GetItem("")
+	if err == nil {
+		t.Error("empty item name should return an error")
+	}
 }

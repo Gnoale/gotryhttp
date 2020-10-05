@@ -63,6 +63,9 @@ func (f *FileDB) InsertItem(i *Item) error {
 }
 
 func (f *FileDB) GetItem(name string) (*Item, error) {
+	if name == "" {
+		return nil, errors.New("empty name is not valid")
+	}
 	if exist := f.exist(name); !exist {
 		return nil, errors.New("the entry doesn't exist")
 	}
@@ -84,6 +87,7 @@ func (f *FileDB) GetItem(name string) (*Item, error) {
 			item.Map[slice[0]] = slice[1]
 		}
 		if strings.Contains(scanner.Text(), name) && !strings.HasPrefix(scanner.Text(), "  ") {
+
 			found = true
 			item.Name = name
 		}
