@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 )
@@ -11,8 +12,36 @@ type App struct {
 }
 
 type User struct {
-	name string
-	auth bool
+	Name     string
+	Password string
+}
+
+var (
+	Creds map[string]string
+)
+
+func (u *User) Validate() error {
+	if pass, ok := Creds[u.Name]; ok {
+		if pass == u.Password {
+			return nil
+		}
+	}
+	return errors.New("wrong username / password")
+}
+
+func (u *User) authHandler(next func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var ok bool
+		u.Name, u.Password, ok = r.BasicAuth()
+		err := u.Validate()
+		if err != nil || !ok {
+			w.Header().Set("WWW-Authenticate", "Basic realm=colombus")
+			// w.WriteHeader(401)
+			http.Error(w, "authorization failed", http.StatusUnauthorized)
+			return
+		}
+		next(w, r)
+	}
 }
 
 func (app *App) itemHandler(w http.ResponseWriter, r *http.Request) {

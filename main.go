@@ -8,6 +8,8 @@ func main() {
 	fsdb := &FileDB{"db.txt"}
 	fsdb.Init()
 	app := &App{fsdb}
-	http.HandleFunc("/item/", app.itemHandler)
+	user := &User{}
+	Creds = map[string]string{"john": "secret"}
+	http.HandleFunc("/item/", user.authHandler(app.itemHandler))
 	http.ListenAndServe(":8080", nil)
 }
